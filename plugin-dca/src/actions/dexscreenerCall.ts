@@ -9,7 +9,7 @@ import {
     type Action,
 } from "@elizaos/core";
 
-import { dexscreenerProvider } from "../providers/dexscreenerProvider";
+import { dexscreenerProvider } from "../providers/dexscreenerProvider.ts";
 
 export default {
     name: "CHECK_PRICE",
