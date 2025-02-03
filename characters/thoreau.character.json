@@ -1,6 +1,6 @@
 {
-  "name": "Toreau",
-  "clients": [],
+  "name": "Thoreau",
+  "clients": ["telegram"],
   "modelProvider": "anthropic",
   "settings": {
       "voice": {

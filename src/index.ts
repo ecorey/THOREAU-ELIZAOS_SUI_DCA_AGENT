@@ -5,36 +5,49 @@ import {
   settings,
   stringToUuid,
   type Character,
-  CacheManager,
-  DbCacheAdapter,
-  type IDatabaseCacheAdapter,
 } from "@elizaos/core";
+import { bootstrapPlugin } from "@elizaos/plugin-bootstrap";
 import { createNodePlugin } from "@elizaos/plugin-node";
+import { solanaPlugin } from "@elizaos/plugin-solana";
 import fs from "fs";
+import net from "net";
 import path from "path";
 import { fileURLToPath } from "url";
-import { initializeClients } from "./clients/index.js";
-import { initializeDatabase } from "./database/index.js";
-import { getTokenForProvider } from "./config/index.js";
+import { initializeDbCache } from "./cache/index.ts";
+import { character } from "./character.ts";
+import { startChat } from "./chat/index.ts";
+import { initializeClients } from "./clients/index.ts";
+import {
+  getTokenForProvider,
+  loadCharacters,
+  parseArguments,
+} from "./config/index.ts";
+import { initializeDatabase } from "./database/index.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function loadCharacter(characterPath: string): Promise<Character> {
-  try {
-    const fullPath = path.resolve(__dirname, '..', characterPath);
-    elizaLogger.info('Loading character from:', fullPath);
-    const fileContent = fs.readFileSync(fullPath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    elizaLogger.error(`Error loading character from ${characterPath}:`, error);
-    throw error;
-  }
-}
+export const wait = (minTime: number = 1000, maxTime: number = 3000) => {
+  const waitTime =
+    Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+  return new Promise((resolve) => setTimeout(resolve, waitTime));
+};
 
-function createAgent(character: Character, db: any, cache: any, token: string) {
-  elizaLogger.success("Creating runtime for character", character.name);
-  const nodePlugin = createNodePlugin();
+let nodePlugin: any | undefined;
+
+export function createAgent(
+  character: Character,
+  db: any,
+  cache: any,
+  token: string
+) {
+  elizaLogger.success(
+    elizaLogger.successesTitle,
+    "Creating runtime for character",
+    character.name,
+  );
+
+  nodePlugin ??= createNodePlugin();
 
   return new AgentRuntime({
     databaseAdapter: db,
@@ -42,7 +55,11 @@ function createAgent(character: Character, db: any, cache: any, token: string) {
     modelProvider: character.modelProvider,
     evaluators: [],
     character,
-    plugins: [nodePlugin].filter(Boolean),
+    plugins: [
+      bootstrapPlugin,
+      nodePlugin,
+      character.settings?.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
+    ].filter(Boolean),
     providers: [],
     actions: [],
     services: [],
@@ -51,89 +68,111 @@ function createAgent(character: Character, db: any, cache: any, token: string) {
   });
 }
 
-function initializeDbCache(character: Character, db: IDatabaseCacheAdapter) {
-  if (!character?.id) {
-    throw new Error("initializeFsCache requires id to be set in character definition");
+async function startAgent(character: Character, directClient: DirectClient) {
+  try {
+    character.id ??= stringToUuid(character.name);
+    character.username ??= character.name;
+
+    const token = getTokenForProvider(character.modelProvider, character);
+    const dataDir = path.join(__dirname, "../data");
+
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    const db = initializeDatabase(dataDir);
+
+    await db.init();
+
+    const cache = initializeDbCache(character, db);
+    const runtime = createAgent(character, db, cache, token);
+
+    await runtime.initialize();
+
+    runtime.clients = await initializeClients(character, runtime);
+
+    directClient.registerAgent(runtime);
+
+    // report to console
+    elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
+
+    return runtime;
+  } catch (error) {
+    elizaLogger.error(
+      `Error starting agent for character ${character.name}:`,
+      error,
+    );
+    console.error(error);
+    throw error;
   }
-  return new CacheManager(new DbCacheAdapter(db, character.id));
 }
 
-async function startAgent() {
+const checkPortAvailable = (port: number): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+
+    server.once("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        resolve(false);
+      }
+    });
+
+    server.once("listening", () => {
+      server.close();
+      resolve(true);
+    });
+
+    server.listen(port);
+  });
+};
+
+const startAgents = async () => {
+  const directClient = new DirectClient();
+  let serverPort = parseInt(settings.SERVER_PORT || "3000");
+  const args = parseArguments();
+
+  let charactersArg = args.characters || args.character;
+  let characters = [character];
+
+  console.log("charactersArg", charactersArg);
+  if (charactersArg) {
+    characters = await loadCharacters(charactersArg);
+  }
+  console.log("characters", characters);
   try {
-    const characterPath = process.argv.find(arg => arg.includes('--character='))?.split('=')[1] 
-      || 'characters/thoreau.character.json';
-    elizaLogger.info('Loading character from:', characterPath);
-    
-    let character;
-    try {
-      character = await loadCharacter(characterPath);
-      
-      if (!character.name || !character.modelProvider) {
-        throw new Error('Character must have name and modelProvider defined');
-      }
-      
-      elizaLogger.info('Character loaded:', {
-        name: character.name,
-        modelProvider: character.modelProvider,
-        clients: character.clients
-      });
-    } catch (error) {
-      elizaLogger.error('Failed to load or validate character:', error);
-      throw error;
-    }
-
-    let db;
-    try {
-      const dataDir = path.join(__dirname, "../data");
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-
-      db = initializeDatabase(dataDir);
-      elizaLogger.success("Database initialized successfully");
-    } catch (error) {
-      elizaLogger.error('Database initialization failed:', error);
-      throw error;
-    }
-
-    try {
-      character.id = stringToUuid(character.name);
-      character.username = character.name;
-      
-      const token = getTokenForProvider(character.modelProvider, character);
-      if (!token) {
-        throw new Error(`No token found for model provider: ${character.modelProvider}`);
-      }
-
-      const cache = initializeDbCache(character, db);
-      const runtime = createAgent(character, db, cache, token);
-      await runtime.initialize();
-      
-      // Initialize clients
-      runtime.clients = await initializeClients(character, runtime);
-
-      // Start server
-      const directClient = new DirectClient();
-      directClient.registerAgent(runtime);
-      const serverPort = parseInt(settings.SERVER_PORT || "3000");
-      await directClient.start(serverPort);
-      
-      elizaLogger.log(`Agent ${character.name} started on port ${serverPort}`);
-    } catch (error) {
-      elizaLogger.error('Failed to initialize agent:', error);
-      throw error;
+    for (const character of characters) {
+      await startAgent(character, directClient as DirectClient);
     }
   } catch (error) {
-    elizaLogger.error("Critical error:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
-    process.exit(1);
+    elizaLogger.error("Error starting agents:", error);
   }
-}
 
-startAgent().catch((error) => {
-  elizaLogger.error("Unhandled error:", error);
+  while (!(await checkPortAvailable(serverPort))) {
+    elizaLogger.warn(`Port ${serverPort} is in use, trying ${serverPort + 1}`);
+    serverPort++;
+  }
+
+  // upload some agent functionality into directClient
+  directClient.startAgent = async (character: Character) => {
+    // wrap it so we don't have to inject directClient later
+    return startAgent(character, directClient);
+  };
+
+  directClient.start(serverPort);
+
+  if (serverPort !== parseInt(settings.SERVER_PORT || "3000")) {
+    elizaLogger.log(`Server started on alternate port ${serverPort}`);
+  }
+
+  const isDaemonProcess = process.env.DAEMON_PROCESS === "true";
+  if(!isDaemonProcess) {
+    elizaLogger.log("Chat started. Type 'exit' to quit.");
+    const chat = startChat(characters);
+    chat();
+  }
+};
+
+startAgents().catch((error) => {
+  elizaLogger.error("Unhandled error in startAgents:", error);
   process.exit(1);
 });

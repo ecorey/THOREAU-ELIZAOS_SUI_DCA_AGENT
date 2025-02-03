@@ -14,7 +14,7 @@
 ===
 START CHARACTER
 
-`NODE_OPTIONS="max-old-space-size=32768" pnpm start --character="characters/arby.character.json"`
+`NODE_OPTIONS="max-old-space-size=32768" pnpm start --character="characters/thoreau.character.json"`
 
 
 ===
