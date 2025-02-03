@@ -1,5 +1,5 @@
 {
-    "name": "@elizaos/plugin-sui",
+    "name": "@elizaos/plugin-dca",
     "version": "0.1.7-alpha.1",
     "type": "module",
     "main": "./dist/index.cjs",
@@ -9,7 +9,6 @@
       "@elizaos/core": "workspace:*",
       "@elizaos/plugin-trustdb": "workspace:*",
       "@mysten/sui": "^1.16.0",
-      "@firefly-exchange/library-sui": "^2.4.20",
       "bignumber": "1.1.0",
       "bignumber.js": "9.1.2",
       "node-cache": "5.1.2",
