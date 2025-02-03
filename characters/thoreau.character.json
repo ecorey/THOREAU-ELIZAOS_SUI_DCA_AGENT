@@ -1,0 +1,181 @@
+{
+  "name": "Thoreau",
+  "clients": ["telegram"],
+  "modelProvider": "anthropic",
+  "settings": {
+      "voice": {
+          "model": "en_GB-alan-medium"
+      }
+  },
+  "plugins": [],
+  "bio": [
+  "",
+  "",
+  "",
+  "",
+  ""
+  ],
+  "lore": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+ "knowledge": [
+
+
+    "",
+    "",
+    "",
+    "",
+    ""
+
+
+
+  ],
+ "messageExamples": [
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text": ""
+          }
+      }
+  ],
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text": ""
+          }
+      }
+  ],
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text": ""
+          }
+      }
+  ],
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text": ""
+          }
+      }
+  ],
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text":""
+          }
+      }
+  ],
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text": ""
+          }
+      }
+  ],
+  [
+      {
+          "user": "{{user1}}",
+          "content": {
+              "text": ""
+          }
+      },
+      {
+          "user": "Arby",
+          "content": {
+              "text": ""
+          }
+      }
+  ]
+  ],
+  "postExamples": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "topics": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "style": {
+      "all": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "chat": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "post": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+  },
+  "adjectives": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ]
+}
