@@ -47,12 +47,15 @@ importers:
       '@mysten/sui':
         specifier: ^1.21.1
         version: 1.21.1(typescript@5.6.3)
+      '@mysten/sui.js':
+        specifier: ^0.54.1
+        version: 0.54.1(typescript@5.6.3)
       '@tavily/core':
         specifier: 0.0.2
         version: 0.0.2
       aftermath-ts-sdk:
         specifier: ^1.2.49
-        version: 1.2.49(@mysten/sui.js@0.37.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@mysten/sui@1.21.1(typescript@5.6.3))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        version: 1.2.49(@mysten/sui.js@0.54.1(typescript@5.6.3))(@mysten/sui@1.21.1(typescript@5.6.3))(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       amqplib:
         specifier: 0.10.5
         version: 0.10.5
@@ -1371,6 +1374,9 @@ packages:
     resolution: {integrity: sha512-y+l1PNV0XDyY8sM3YtuMLK5vE3/hkfId+Do8pLo/OPxfxuFAUwcGz3oiiUuV46/aBpwTzZ+mRWVMtlSKbradhw==}
     engines: {node: '>= 14'}
 
+  '@mysten/bcs@0.11.1':
+    resolution: {integrity: sha512-xP85isNSYUCHd3O/g+TmZYmg4wK6cU8q/n/MebkIGP4CYVJZz2wU/G24xIZ3wI+0iTop4dfgA5kYrg/DQKCUzA==}
+
   '@mysten/bcs@0.7.3':
     resolution: {integrity: sha512-fbusBfsyc2MpTACi72H5edWJ670T84va+qn9jSPpb5BzZ+pzUM1Q0ApPrF5OT+mB1o5Ng+mxPQpBCZQkfiV2TA==}
 
@@ -1379,6 +1385,11 @@ packages:
 
   '@mysten/sui.js@0.37.1':
     resolution: {integrity: sha512-nEOqnjUqb/VJcVk23LgZOX1FmBib/mBCwAWaJhtsCHLwv2jIAfCPY/fpB9lJ62QHrM8UFclpWxsLkqcUkKyPgA==}
+    engines: {node: '>=16'}
+    deprecated: This package has been renamed to @mysten/sui, please update to use the renamed package.
+
+  '@mysten/sui.js@0.54.1':
+    resolution: {integrity: sha512-TSmGIX7U9O/uS9EKIQdv7/S69KTbBhMJVelXCafJE6IJw8iB9cN9uLu0+uklkBSDrbRmLSEY70jMr3uRFjReIg==}
     engines: {node: '>=16'}
     deprecated: This package has been renamed to @mysten/sui, please update to use the renamed package.
 
@@ -9223,6 +9234,10 @@ snapshots:
 
   '@msgpack/msgpack@3.0.0-beta2': {}
 
+  '@mysten/bcs@0.11.1':
+    dependencies:
+      bs58: 5.0.0
+
   '@mysten/bcs@0.7.3':
     dependencies:
       bs58: 5.0.0
@@ -9247,6 +9262,25 @@ snapshots:
       - bufferutil
       - encoding
       - utf-8-validate
+
+  '@mysten/sui.js@0.54.1(typescript@5.6.3)':
+    dependencies:
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
+      '@mysten/bcs': 0.11.1
+      '@noble/curves': 1.8.1
+      '@noble/hashes': 1.7.1
+      '@scure/bip32': 1.6.2
+      '@scure/bip39': 1.5.4
+      '@suchipi/femver': 1.0.0
+      bech32: 2.0.0
+      gql.tada: 1.8.10(graphql@16.10.0)(typescript@5.6.3)
+      graphql: 16.10.0
+      superstruct: 1.0.4
+      tweetnacl: 1.0.3
+    transitivePeerDependencies:
+      - '@gql.tada/svelte-support'
+      - '@gql.tada/vue-support'
+      - typescript
 
   '@mysten/sui@1.21.1(typescript@5.6.3)':
     dependencies:
@@ -10792,10 +10826,10 @@ snapshots:
 
   acorn@8.14.0: {}
 
-  aftermath-ts-sdk@1.2.49(@mysten/sui.js@0.37.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@mysten/sui@1.21.1(typescript@5.6.3))(bufferutil@4.0.9)(utf-8-validate@5.0.10):
+  aftermath-ts-sdk@1.2.49(@mysten/sui.js@0.54.1(typescript@5.6.3))(@mysten/sui@1.21.1(typescript@5.6.3))(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       '@mysten/sui': 1.21.1(typescript@5.6.3)
-      '@mysten/sui.js': 0.37.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@mysten/sui.js': 0.54.1(typescript@5.6.3)
       '@pythnetwork/pyth-sui-js': 1.2.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       bn.js: 5.2.1
       dayjs: 1.11.13

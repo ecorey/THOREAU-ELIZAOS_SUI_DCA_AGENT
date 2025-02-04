@@ -1,7 +1,12 @@
 import { IAgentRuntime, Memory, Provider, State } from "@elizaos/core";
-import { SuiClient } from "@mysten/sui/client";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { Aftermath } from "aftermath-ts-sdk";
+
+
+
+
+
+
 
 interface DCAOrderParams {
     walletAddress: string; 
@@ -25,15 +30,7 @@ interface DCAOrderParams {
     isSponsoredTx?: boolean;
 }
 
-// Initialize Sui client at the top level
-let suiClient: SuiClient;
-try {
-    suiClient = new SuiClient({
-        url: "https://fullnode.mainnet.sui.io:443"
-    });
-} catch (error) {
-    console.error("Error initializing SuiClient:", error);
-}
+
 
 const createDcaProvider = {
     get: async (
@@ -41,14 +38,13 @@ const createDcaProvider = {
         message: Memory,
         state?: State
     ): Promise<string> => {
-        if (!suiClient) {
-            return "Error: Unable to connect to Sui network";
-        }
+        
 
         try {
             // Initialize Aftermath SDK
-            const afSdk = new Aftermath("MAINNET");
-            await afSdk.init();
+            const afSdk = new Aftermath("MAINNET"); 
+            await afSdk.init(); 
+
             const dca = afSdk.Dca();
 
             // Get wallet details from runtime settings

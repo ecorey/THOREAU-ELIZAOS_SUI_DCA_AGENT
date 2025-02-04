@@ -13,6 +13,8 @@ import dexscreenerCall from "./actions/dexscreenerCall.ts";
 import { createDcaProvider } from "./providers/createDcaProvider.ts";
 import createDcaAction from "./actions/createDca.ts";
 
+import { createAccountProvider } from "./providers/createAccountProvider.ts";
+import createAccountAction from "./actions/createAccount.ts";
 
 
 
@@ -24,6 +26,7 @@ export const dcaPlugin: Plugin = {
     actions: [
         transferToken,
         dexscreenerCall,
+        createAccountAction,
         // createDcaAction,
         
     ],
@@ -31,6 +34,7 @@ export const dcaPlugin: Plugin = {
     providers: [
         walletProvider,
         dexscreenerProvider,
+        createAccountProvider,
         // createDcaProvider, 
     ],
 };
