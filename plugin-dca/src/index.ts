@@ -9,6 +9,11 @@ import { dexscreenerProvider } from "./providers/dexscreenerProvider.ts";
 import dexscreenerCall from "./actions/dexscreenerCall.ts";
 
 
+// DCA
+import { createDcaProvider } from "./providers/createDcaProvider.ts";
+import createDcaAction from "./actions/createDca.ts";
+
+
 
 
 export { WalletProvider, transferToken as TransferSuiToken };
@@ -19,12 +24,14 @@ export const dcaPlugin: Plugin = {
     actions: [
         transferToken,
         dexscreenerCall,
+        // createDcaAction,
         
     ],
     evaluators: [],
     providers: [
         walletProvider,
-        dexscreenerProvider, 
+        dexscreenerProvider,
+        // createDcaProvider, 
     ],
 };
 
