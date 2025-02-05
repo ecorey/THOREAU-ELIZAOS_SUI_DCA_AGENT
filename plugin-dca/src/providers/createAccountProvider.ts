@@ -35,16 +35,16 @@ const createAccountProvider: Provider = {
 
 
 
-            const response = await dca.createUserPublicKey({
-                walletAddress,
-                bytes: messageJson,
-                signature: signatureData.signature
-            });
-            console.log("API response:", response);
+            // const response = await dca.createUserPublicKey({
+            //     walletAddress,
+            //     bytes: messageJson,
+            //     signature: signatureData.signature
+            // });
+            // console.log("API response:", response);
 
-            
 
-            return response ? "SUCCESS" : "FAILED";
+
+            // return response ? "SUCCESS" : "FAILED";
         } catch (error) {
             console.error("Full error:", error);
             return `ERROR:${error.message}`;
