@@ -23,6 +23,7 @@
     "@elizaos/plugin-image-generation": "0.1.9",
     "@elizaos/plugin-node": "0.1.9",
     "@mysten/sui": "^1.21.1",
+    "@mysten/sui.js": "^0.54.1",
     "@tavily/core": "0.0.2",
     "aftermath-ts-sdk": "^1.2.49",
     "amqplib": "0.10.5",

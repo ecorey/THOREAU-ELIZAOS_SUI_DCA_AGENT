@@ -8,7 +8,8 @@
     "dependencies": {
       "@elizaos/core": "workspace:*",
       "@elizaos/plugin-trustdb": "workspace:*",
-      "@mysten/sui": "^1.16.0",
+      "aftermath-ts-sdk": "^1.2.49",
+      "@mysten/sui": "^1.21.1",
       "bignumber": "1.1.0",
       "bignumber.js": "9.1.2",
       "node-cache": "5.1.2",
