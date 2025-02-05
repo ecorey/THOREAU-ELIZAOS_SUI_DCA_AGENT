@@ -1,32 +1,22 @@
-// src/actions/createAccount.ts
+// createAccount.ts
 import {
+    Action, 
     ActionExample,
-    Content,
-    HandlerCallback,
     IAgentRuntime,
     Memory,
     State,
-    elizaLogger,
-    type Action,
+    HandlerCallback,
+    elizaLogger
 } from "@elizaos/core";
-
 import { createAccountProvider } from "../providers/createAccountProvider.ts";
 
-export default {
+const createAccountAction =  {
     name: "CREATE_ACCOUNT",
-    similes: ["SETUP_ACCOUNT", "START_ACCOUNT", "CREATE_DCA_ACCOUNT"],
-    description: "Creates a new DCA account for automated trading on Aftermath Finance",
+    similes: ["SETUP_ACCOUNT", "START_ACCOUNT"],
 
     validate: async (runtime: IAgentRuntime, message: Memory) => {
-        console.log("Validating account creation request from user:", message.userId);
-        
         const text = message.content.text?.toLowerCase() || '';
-        const isCreateAccountRequest = text.includes('create account') || 
-                                    text.includes('setup account') || 
-                                    text.includes('start dca');
-
-        console.log("Is valid create account request:", isCreateAccountRequest);
-        return isCreateAccountRequest;
+        return text.includes('create account') || text.includes('setup account');
     },
 
     handler: async (
@@ -36,68 +26,54 @@ export default {
         _options: { [key: string]: unknown },
         callback?: HandlerCallback
     ): Promise<boolean> => {
-        elizaLogger.log("Starting CREATE_ACCOUNT handler...");
-
         try {
-            // Get account creation result from provider
             const result = await createAccountProvider.get(runtime, message, state);
-            console.log("Account creation result:", result);
-
-            if (callback) {
-                const response = {
-                    text: result,
-                    content: { 
-                        status: result.includes("successfully") ? "account_created" : "account_creation_failed",
-                        walletAddress: state.walletAddress
-                    }
-                };
-                callback(response);
+            
+            let responseText;
+            switch(result) {
+                case "SUCCESS":
+                    responseText = "Successfully created your DCA account";
+                    break;
+                case "EXISTS":
+                    responseText = "DCA account already exists";
+                    break;
+                case "FAILED":
+                    responseText = "Failed to create DCA account";
+                    break;
+                default:
+                    responseText = `Error: ${result.replace('ERROR:', '')}`;
             }
 
-            return result.includes("successfully");
-
-        } catch (error) {
-            console.error("Error in CREATE_ACCOUNT action:", error.stack || error);
             if (callback) {
                 callback({
-                    text: `Failed to create DCA account: ${error.message || "Unknown error"}`,
-                    content: { error: error.message },
+                    text: responseText,
+                    content: { status: result }
+                });
+            }
+
+            return result === "SUCCESS";
+
+        } catch (error) {
+            if (callback) {
+                callback({
+                    text: `Error: ${error.message}`,
+                    content: { error: error.message }
                 });
             }
             return false;
         }
     },
 
-    examples: [
-        [
-            {
-                user: "{{user1}}",
-                content: {
-                    text: "Create a DCA account for automated trading",
-                },
-            },
-            {
-                user: "{{user2}}",
-                content: {
-                    text: "I'll help you set up your DCA account right away...",
-                    action: "CREATE_ACCOUNT",
-                },
-            },
-        ],
-        [
-            {
-                user: "{{user1}}",
-                content: {
-                    text: "Setup my account for DCA trading on Aftermath",
-                },
-            },
-            {
-                user: "{{user2}}",
-                content: {
-                    text: "Creating your DCA account on Aftermath Finance...",
-                    action: "CREATE_ACCOUNT",
-                },
-            },
-        ],
-    ] as ActionExample[][],
+    examples: [[
+        {
+            user: "{{user1}}",
+            content: { text: "Create a DCA account" }
+        },
+        {
+            user: "{{user2}}",
+            content: { text: "Setting up your DCA account...", action: "CREATE_ACCOUNT" }
+        }
+    ]] as ActionExample[][]
 } as Action;
+
+export default createAccountAction;
