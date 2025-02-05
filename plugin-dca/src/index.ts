@@ -14,7 +14,7 @@ import { createDcaProvider } from "./providers/createDcaProvider.ts";
 import createDcaAction from "./actions/createDca.ts";
 
 import { createAccountProvider } from "./providers/createAccountProvider.ts";
-import createAccountAction from "./actions/createAccount.ts";
+import createAccount from "./actions/createAccount.ts";
 
 
 
@@ -26,7 +26,7 @@ export const dcaPlugin: Plugin = {
     actions: [
         transferToken,
         dexscreenerCall,
-        createAccountAction,
+        createAccount,
         // createDcaAction,
         
     ],
