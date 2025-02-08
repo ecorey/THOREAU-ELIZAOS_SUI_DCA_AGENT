@@ -10,11 +10,17 @@ import dexscreenerCall from "./actions/dexscreenerCall.ts";
 
 
 // DCA
-import { createDcaProvider } from "./providers/createDcaProvider.ts";
-import createDcaAction from "./actions/createDca.ts";
+import { dcaProvider } from "./providers/dcaProvider.ts";
+import createDca from "./actions/createDca.ts";
 
-import { createAccountProvider } from "./providers/createAccountProvider.ts";
-import createAccount from "./actions/createAccount.ts";
+
+
+// BLUEFIN PROTOCOL
+import {bluefinDataProvider} from "./providers/bluefinDataProvider.ts";
+import { bluefinSwapProvider } from "./providers/bluefinSwapProvider.ts";
+
+import bluefinFetchData from "./actions/bluefinFetchData.ts";
+import bluefinSwap from "./actions/bluefinSwap.ts";
 
 
 
@@ -25,16 +31,20 @@ export const dcaPlugin: Plugin = {
     description: "DCA Plugin",
     actions: [
         transferToken,
-        dexscreenerCall,
-        createAccount,
+        bluefinFetchData,
+        bluefinSwap,
+        // dexscreenerCall,
+        createDca,
         // createDcaAction,
         
     ],
     evaluators: [],
     providers: [
         walletProvider,
-        dexscreenerProvider,
-        createAccountProvider,
+        bluefinDataProvider,
+        bluefinSwapProvider,
+        // dexscreenerProvider,
+        dcaProvider,
         // createDcaProvider, 
     ],
 };
