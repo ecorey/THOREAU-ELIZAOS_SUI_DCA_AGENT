@@ -1,98 +1,102 @@
 import {
-    ActionExample,
-    HandlerCallback,
-    IAgentRuntime,
-    Memory,
-    elizaLogger,
-    type Action
+  ActionExample,
+  HandlerCallback,
+  IAgentRuntime,
+  Memory,
+  elizaLogger,
+  Action,
 } from "@elizaos/core";
-import { dcaProvider, DCAState } from "../providers/dcaProvider.ts";
-
-function parseDCAParams(message: Memory): Record<string, any> {
-    const text = message.content.text?.toLowerCase() || '';
-    const params: Record<string, any> = {};
-
-    console.log("📩 Raw message text:", text);
-
-    // Parse USDC amount if specified (e.g., "10 USDC")
-    const usdcMatch = text.match(/(\d+\.?\d*)\s*usdc/i);
-    if (usdcMatch) {
-        const amount = parseFloat(usdcMatch[1]);
-        console.log("🔹 Parsed USDC amount:", amount);
-
-        if (isNaN(amount) || amount <= 0) {
-            throw new Error("Invalid USDC amount. Ensure it's a valid number.");
-        }
-
-        params.allocateCoinAmount = BigInt(Math.round(amount * 1_000_000));
-    } else {
-        throw new Error("❌ No USDC amount found in message.");
-    }
-
-    // Validate before returning
-    if (!params.allocateCoinAmount || params.allocateCoinAmount <= BigInt(0)) {
-        throw new Error("Invalid allocateCoinAmount! Check that it's a proper BigInt.");
-    }
-
-    console.log("✅ Final Parsed DCA Parameters:", params);
-
-    return {
-        allocateCoinType: "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC",
-        allocateCoinAmount: params.allocateCoinAmount,
-        buyCoinType: "0x2::sui::SUI",
-        frequencyMs: 3600000,
-        tradesAmount: 2
-    };
-}
-
+import { dcaProvider } from "../providers/dcaProvider.ts";
 
 export default {
-    name: "CREATE_DCA",
-    description: "Sets up DCA (Dollar Cost Averaging) to buy SUI using USDC on Aftermath Finance.",
+  name: "AFTERMATH_SETUP",
+  description: "Connect to Aftermath and create user account if not found",
 
-    validate: async (_runtime: IAgentRuntime, message: Memory) => {
-        console.log("Validating DCA setup request from user:", message.userId);
-        return /dca/i.test(message.content.text || '') && /sui/i.test(message.content.text || '') && /usdc/i.test(message.content.text || '');
-    },
+  // Validate based on various trigger phrases
+  validate: async (_runtime: IAgentRuntime, message: Memory) => {
+    const text = message.content.text?.toLowerCase() || "";
+    return (
+      text.includes("aftermath") || 
+      text.includes("af setup") || 
+      text.includes("dca setup") || 
+      text.includes("initialize wallet")
+    );
+  },
 
-    handler: async (runtime: IAgentRuntime, message: Memory, state: DCAState, _options: {}, callback?: HandlerCallback): Promise<boolean> => {
-        elizaLogger.log("Starting CREATE_DCA handler...");
+  handler: async (
+    runtime: IAgentRuntime,
+    message: Memory,
+    state,
+    _options: {},
+    callback?: HandlerCallback
+  ): Promise<boolean> => {
+    elizaLogger.log("Starting AFTERMATH_SETUP handler...");
 
-        try {
-            if (!state.walletAddress) {
-                console.log("Aftermath SDK not initialized. Initializing now...");
-                await dcaProvider.get(runtime, message, state);
+    try {
+      // Call the provider to set up the account
+      const result = await dcaProvider.get(runtime, message, state);
+      
+      // Prepare callback response
+      if (callback) {
+        callback({
+          text: result.startsWith("SUCCESS") 
+            ? `✅ ${result}` 
+            : `❌ Setup Failed: ${result}`,
+          content: { 
+            status: result.startsWith("SUCCESS") ? "ok" : "error" 
+          },
+        });
+      }
+
+      // Return true if successful, false otherwise
+      return result.startsWith("SUCCESS");
+    } catch (error: any) {
+      console.error("Error during Aftermath setup:", error);
+      
+      if (callback) {
+        callback({
+          text: `❌ Aftermath setup failed: ${error.message}`,
+          content: { 
+            error: error.message,
+            details: {
+              name: error.name,
+              stack: error.stack
             }
-
-            const aftermath = (state as any).aftermath;
-            if (!aftermath || !aftermath.dca) {
-                throw new Error("Failed to retrieve Aftermath DCA API instance.");
-            }
-
-            const params = parseDCAParams(message);
-            const perTradeAmount = params.allocateCoinAmount / BigInt(params.tradesAmount);
-
-            if (perTradeAmount <= BigInt(0)) {
-                throw new Error("Invalid per-trade allocation.");
-            }
-
-            const orderTx = await aftermath.dca.getCreateDcaOrderTx({
-                walletAddress: state.walletAddress!,
-                allocateCoinType: params.allocateCoinType,
-                allocateCoinAmount: params.allocateCoinAmount,
-                buyCoinType: params.buyCoinType,
-                frequencyMs: params.frequencyMs,
-                tradesAmount: params.tradesAmount,
-                delayTimeMs: 0,
-                maxAllowableSlippageBps: 250,
-                coinPerTradeAmount: perTradeAmount
-            });
-
-            console.log("✓ DCA order created:", orderTx);
-            return true;
-        } catch (error) {
-            console.error("Error during DCA setup:", error);
-            return false;
-        }
+          },
+        });
+      }
+      
+      return false;
     }
+  },
+
+  // Example interactions to demonstrate usage
+  examples: [
+    [
+      {
+        user: "{{user1}}",
+        content: { text: "Can you set up my Aftermath wallet?" },
+      },
+      {
+        user: "{{user2}}",
+        content: { 
+          text: "✅ Aftermath account setup complete", 
+          action: "AFTERMATH_SETUP" 
+        },
+      },
+    ],
+    [
+      {
+        user: "{{user1}}",
+        content: { text: "Initialize my DCA wallet" },
+      },
+      {
+        user: "{{user2}}",
+        content: { 
+          text: "✅ Aftermath account setup complete", 
+          action: "AFTERMATH_SETUP" 
+        },
+      },
+    ],
+  ] as ActionExample[][],
 } as Action;
