@@ -1,3 +1,4 @@
+
 import {
   ActionExample,
   HandlerCallback,
@@ -10,67 +11,57 @@ import { dcaProvider } from "../providers/dcaProvider.ts";
 
 export default {
   name: "CREATE_DCA_ORDER",
-  description: "Create a Dollar-Cost Averaging (DCA) order on Aftermath",
+  description: "Create a DCA order by building + broadcasting the transaction",
 
-  // 1) Force this action to ALWAYS run for every incoming message:
-  validate: async (_runtime: IAgentRuntime, _message: Memory) => {
-    return true; // <---- changed from your old text-check to just `true`
-  },
+  // For testing, always trigger:
+  validate: async (_runtime: IAgentRuntime, _message: Memory) => true,
 
   handler: async (
     runtime: IAgentRuntime,
     message: Memory,
     state,
-    _options: {},
+    _options,
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    elizaLogger.log("Starting CREATE_DCA_ORDER handler...");
+    elizaLogger.log("[CREATE_DCA_ORDER] Handler triggered...");
 
     try {
-      // 2) Set up the user’s Aftermath account
+      // 1) Setup DCA
       const setupResult = await dcaProvider.get(runtime, message, state);
       if (!setupResult.startsWith("SUCCESS")) {
-        throw new Error("Failed to set up Aftermath account");
+        throw new Error(setupResult);
       }
 
-      // 3) Actually create the DCA order with your existing parameters
+      // 2) Create + broadcast
       const dcaResult = await dcaProvider.createDcaOrder(runtime, message, state);
 
-      // Return text back to user
       if (callback) {
-        callback({
-          text: dcaResult.startsWith("SUCCESS")
-            ? `✅ ${dcaResult}`
-            : `❌ DCA Order Creation Failed: ${dcaResult}`,
-          content: {
-            status: dcaResult.startsWith("SUCCESS") ? "ok" : "error"
-          },
-        });
+        if (dcaResult.startsWith("SUCCESS")) {
+          callback({
+            text: `✅ ${dcaResult}`,
+            content: { status: "ok" },
+          });
+        } else {
+          callback({
+            text: `❌ DCA Order Creation Failed: ${dcaResult}`,
+            content: { error: dcaResult },
+          });
+        }
       }
 
-      // Indicate success/fail
       return dcaResult.startsWith("SUCCESS");
     } catch (error: any) {
-      console.error("Error during DCA order creation:", error);
-
+      elizaLogger.error("[CREATE_DCA_ORDER] error:", error);
       if (callback) {
         callback({
-          text: `❌ DCA order creation failed: ${error.message}`,
-          content: {
-            error: error.message,
-            details: {
-              name: error.name,
-              stack: error.stack
-            }
-          },
+          text: `❌ DCA order creation error: ${error.message}`,
+          content: { error: error.message },
         });
       }
-
       return false;
     }
   },
 
-  // Original examples are unchanged (you can keep or remove them)
   examples: [
     [
       {
@@ -81,20 +72,7 @@ export default {
         user: "{{user2}}",
         content: {
           text: "✅ DCA Order created",
-          action: "CREATE_DCA_ORDER"
-        },
-      },
-    ],
-    [
-      {
-        user: "{{user1}}",
-        content: { text: "Set up my DCA investment" },
-      },
-      {
-        user: "{{user2}}",
-        content: {
-          text: "✅ DCA Order created",
-          action: "CREATE_DCA_ORDER"
+          action: "CREATE_DCA_ORDER",
         },
       },
     ],
