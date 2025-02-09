@@ -13,6 +13,8 @@ import createDca from "./actions/createDca.ts";
 import { eggOwnershipProvider } from "./providers/eggCheckProvider.ts";
 import eggCheck from "./actions/eggCheck.ts";
 
+import { checkEggOwnershipByAddressProvider } from "./providers/eggCheckByAddressProvider.ts";
+import eggCheckByAddress from "./actions/eggCheckByAddress.ts";
 
 
 // BLUEFIN PROTOCOL
@@ -34,20 +36,22 @@ export const dcaPlugin: Plugin = {
     description: "DCA Plugin",
     actions: [
         transferToken,
-        bluefinFetchData,
-        suiUsdcSwap,
-        usdcSuiSwap,
-        createDca,
-        eggCheck,   
+        // bluefinFetchData,
+        // suiUsdcSwap,
+        // usdcSuiSwap,
+        // createDca,
+        eggCheck,
+        eggCheckByAddress,   
     ],
     evaluators: [],
     providers: [
         walletProvider,
-        bluefinDataProvider,
-        suiUsdcSwapProvider,
-        usdcSuiSwapProvider,
-        dcaProvider,
+        // bluefinDataProvider,
+        // suiUsdcSwapProvider,
+        // usdcSuiSwapProvider,
+        // dcaProvider,
         eggOwnershipProvider,
+        checkEggOwnershipByAddressProvider,
     ],
 };
 
