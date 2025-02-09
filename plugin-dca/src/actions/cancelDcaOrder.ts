@@ -1,4 +1,3 @@
-// file: plugin-dca/src/actions/cancelDcaOrder.ts
 
 import {
   ActionExample,
@@ -14,10 +13,8 @@ export default {
   name: "CANCEL_DCA_ORDER",
   description: "Cancels a DCA order by ID (like 0x...)",
   
-  // For instance, if user says: "cancel dca 0xf6d51..."
   validate: async (_runtime: IAgentRuntime, message: Memory) => {
     const text = (message.content.text ?? "").toLowerCase();
-    // we'll only trigger if "cancel dca" is in the text, plus "0x"
     return text.includes("cancel dca") && text.includes("0x");
   },
 
@@ -30,10 +27,8 @@ export default {
   ): Promise<boolean> => {
     elizaLogger.log("[CANCEL_DCA_ORDER] Handler triggered...");
 
-    // 1) Actually call the provider's cancel method
     const result = await dcaCancelProvider.cancelDcaOrder(runtime, message, state);
 
-    // 2) Provide a callback response
     if (callback) {
       if (result.startsWith("ERROR")) {
         callback({
@@ -48,7 +43,6 @@ export default {
       }
     }
 
-    // Return success if result is not an error
     return !result.startsWith("ERROR");
   },
 

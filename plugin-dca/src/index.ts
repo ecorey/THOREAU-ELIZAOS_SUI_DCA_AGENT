@@ -2,8 +2,6 @@ import { Plugin } from "@elizaos/core";
 import transferToken from "./actions/transfer.ts";
 import { WalletProvider, walletProvider } from "./providers/wallet.ts";
 
-
-
 // AFTERMATH DCA
 import { dcaProvider } from "./providers/dcaProvider.ts";
 import createDca from "./actions/createDca.ts";
@@ -14,19 +12,14 @@ import getActiveDcaOrders from "./actions/getActiveDcaOrders.ts";
 import { dcaCancelProvider } from "./providers/dcaCancelProvider.ts";
 import cancelDcaOrder from "./actions/cancelDcaOrder.ts";
 
-
-
 // AFTERMATH EGG
 import { checkEggOwnershipByAddressProvider } from "./providers/eggCheckByAddressProvider.ts";
 import eggCheckByAddress from "./actions/eggCheckByAddress.ts";
-
-
 
 // BLUEFIN PROTOCOL
 import { bluefinDataProvider } from "./providers/bluefinDataProvider.ts";
 import { suiUsdcSwapProvider } from "./providers/suiUsdcSwapProvider.ts";
 import { usdcSuiSwapProvider } from "./providers/usdcSuiSwapProvider.ts";
-
 
 import bluefinFetchData from "./actions/bluefinFetchData.ts";
 import suiUsdcSwap from "./actions/suiUsdcSwap.ts";
@@ -41,24 +34,24 @@ export const dcaPlugin: Plugin = {
     description: "DCA Plugin",
     actions: [
         transferToken,
-        // bluefinFetchData,
-        // suiUsdcSwap,
-        // usdcSuiSwap,
+        bluefinFetchData,
+        suiUsdcSwap,
+        usdcSuiSwap,
         createDca,
         getActiveDcaOrders,
         cancelDcaOrder,
-        // eggCheckByAddress,   
+        eggCheckByAddress,   
     ],
     evaluators: [],
     providers: [
         walletProvider,
-        // bluefinDataProvider,
-        // suiUsdcSwapProvider,
-        // usdcSuiSwapProvider,
+        bluefinDataProvider,
+        suiUsdcSwapProvider,
+        usdcSuiSwapProvider,
         dcaProvider,
         dcaActiveOrdersProvider,
         dcaCancelProvider,
-        // checkEggOwnershipByAddressProvider,
+        checkEggOwnershipByAddressProvider,
     ],
 };
 
