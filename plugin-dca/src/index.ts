@@ -37,8 +37,8 @@ export const dcaPlugin: Plugin = {
         // bluefinFetchData,
         // suiUsdcSwap,
         // usdcSuiSwap,
-        // createDca,
-        eggCheckByAddress,   
+        createDca,
+        // eggCheckByAddress,   
     ],
     evaluators: [],
     providers: [
@@ -46,8 +46,8 @@ export const dcaPlugin: Plugin = {
         // bluefinDataProvider,
         // suiUsdcSwapProvider,
         // usdcSuiSwapProvider,
-        // dcaProvider,
-        checkEggOwnershipByAddressProvider,
+        dcaProvider,
+        // checkEggOwnershipByAddressProvider,
     ],
 };
 
