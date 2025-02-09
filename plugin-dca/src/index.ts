@@ -8,6 +8,13 @@ import { WalletProvider, walletProvider } from "./providers/wallet.ts";
 import { dcaProvider } from "./providers/dcaProvider.ts";
 import createDca from "./actions/createDca.ts";
 
+import { dcaActiveOrdersProvider } from "./providers/dcaActiveOrdersProvider.ts";
+import getActiveDcaOrders from "./actions/getActiveDcaOrders.ts";
+
+import { dcaCancelProvider } from "./providers/dcaCancelProvider.ts";
+import cancelDcaOrder from "./actions/cancelDcaOrder.ts";
+
+
 
 // AFTERMATH EGG
 import { checkEggOwnershipByAddressProvider } from "./providers/eggCheckByAddressProvider.ts";
@@ -38,6 +45,8 @@ export const dcaPlugin: Plugin = {
         // suiUsdcSwap,
         // usdcSuiSwap,
         createDca,
+        getActiveDcaOrders,
+        cancelDcaOrder,
         // eggCheckByAddress,   
     ],
     evaluators: [],
@@ -47,6 +56,8 @@ export const dcaPlugin: Plugin = {
         // suiUsdcSwapProvider,
         // usdcSuiSwapProvider,
         dcaProvider,
+        dcaActiveOrdersProvider,
+        dcaCancelProvider,
         // checkEggOwnershipByAddressProvider,
     ],
 };
