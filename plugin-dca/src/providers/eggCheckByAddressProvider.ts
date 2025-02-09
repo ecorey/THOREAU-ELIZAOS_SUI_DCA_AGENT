@@ -1,9 +1,8 @@
-// eggCheckByAddressProvider.ts
 import { IAgentRuntime, Memory, Provider, State } from "@elizaos/core";
 import { SuiClient } from "@firefly-exchange/library-sui";
 
 export interface EggCheckByAddressState extends State {
-  address?: string;
+  address?: string; // We'll reuse this for kiosk ID
 }
 
 export const checkEggOwnershipByAddressProvider: Provider = {
@@ -13,100 +12,93 @@ export const checkEggOwnershipByAddressProvider: Provider = {
     state?: EggCheckByAddressState
   ): Promise<string> => {
     try {
-      console.log("Provider called with state:", state);
-      
       if (!state?.address) {
         return JSON.stringify({
           success: false,
-          error: "No address provided"
+          error: "No kiosk ID provided",
         });
       }
 
-      const client = new SuiClient({ url: "https://fullnode.mainnet.sui.io:443" });
-      
-      // First, get the dynamic fields of the address
-      const dynamicFields = await client.getDynamicFields({
-        parentId: state.address
+      // Interpret 'address' as kioskId
+      const kioskId = state.address;
+      console.log("Checking kiosk:", kioskId);
+
+      const client = new SuiClient({
+        url: "https://fullnode.mainnet.sui.io:443",
       });
 
-      console.log("Dynamic fields for address:", dynamicFields);
+      // 1. Get the kiosk object with its Move fields
+      const kioskObjectRes = await client.getObject({
+        id: kioskId,
+        options: {
+          showOwner: true,    // We want to see if it's Shared or AddressOwner, etc.
+          showContent: true,  // So we can read the kiosk's fields
+        },
+      });
 
-      // Look for kiosk in dynamic fields
-      let kioskFields = [];
-      let wrapperFields = [];
-      let eggFound = false;
-
-      for (const field of dynamicFields.data || []) {
-        // Check each dynamic field object
-        const fieldObject = await client.getDynamicFieldObject({
-          parentId: state.address,
-          name: field.name
+      if (!kioskObjectRes.data) {
+        return JSON.stringify({
+          success: false,
+          error: `Kiosk ${kioskId} not found`,
         });
+      }
 
-        console.log("Field object:", field.name, fieldObject);
+      // The kiosk might be shared, but let's see if it has an "owner" field in its Move struct
+      let kioskOwnerField: string | null = null;
+      const kioskOwnerInfo = kioskObjectRes.data.owner; // e.g. { Shared: { ... } } or { AddressOwner: "0x..." }
 
-        // Check if this is a kiosk
-        if (field.objectType?.includes("kiosk")) {
-          // Get kiosk contents
-          const kioskContents = await client.getDynamicFields({
-            parentId: field.objectId
-          });
-          kioskFields = kioskContents.data;
-          console.log("Kiosk contents:", kioskContents);
-
-          // Check kiosk contents for wrapper or egg
-          for (const item of kioskContents.data || []) {
-            if (item.objectType?.includes("AfEgg") || 
-                item.objectType?.includes("AfEggWrapper")) {
-              eggFound = true;
-              break;
-            }
-          }
-        }
-
-        // Check if this is a wrapper
-        if (field.objectType?.includes("AfEggWrapper")) {
-          const wrapperContents = await client.getDynamicFields({
-            parentId: field.objectId
-          });
-          wrapperFields = wrapperContents.data;
-          console.log("Wrapper contents:", wrapperContents);
-
-          // Check wrapper contents for egg
-          for (const item of wrapperContents.data || []) {
-            if (item.objectType?.includes("AfEgg")) {
-              eggFound = true;
-              break;
-            }
-          }
-        }
-
-        // Direct egg check
-        if (field.objectType?.includes("AfEgg")) {
-          eggFound = true;
+      // If it's a move object, we can read its fields
+      const content = kioskObjectRes.data.content;
+      if (content && content.dataType === "moveObject") {
+        const fields = content.fields as { owner?: string };
+        // Adjust the property name ("owner") to match your actual kiosk's Move definition
+        if (fields.owner && typeof fields.owner === "string") {
+          kioskOwnerField = fields.owner;
         }
       }
 
-      const result = JSON.stringify({
+      console.log("Kiosk Sui owner info:", kioskOwnerInfo);
+      console.log("Kiosk 'owner' field in Move struct:", kioskOwnerField);
+
+      // 2. Check if the kiosk has an AfEgg
+      const dynamicFieldsRes = await client.getDynamicFields({
+        parentId: kioskId,
+      });
+      let hasEgg = false;
+
+      for (const field of dynamicFieldsRes.data) {
+        const fieldObjRes = await client.getDynamicFieldObject({
+          parentId: kioskId,
+          name: field.name,
+        });
+        const fieldType = fieldObjRes?.data?.type ?? "";
+
+        if (fieldType.includes("AfEgg")) {
+          hasEgg = true;
+          break;
+        }
+      }
+
+      const result = {
         success: true,
-        ownsEgg: eggFound,
-        hasKiosk: kioskFields.length > 0,
-        hasWrapper: wrapperFields.length > 0,
-        kioskFieldCount: kioskFields.length,
-        wrapperFieldCount: wrapperFields.length,
-        address: state.address
-      });
+        kioskId,
+        // Kiosk Sui-level owner (could be "Shared", "Immutable", or "AddressOwner")
+        kioskSuiOwner: kioskOwnerInfo,
+        // Kiosk's Move-level "owner" field (often the actual user address)
+        kioskOwnerField,
+        hasEgg,
+      };
 
-      console.log("Provider returning result:", result);
-      return result;
+      console.log("Provider returning:", result);
+      return JSON.stringify(result);
 
     } catch (error: any) {
-      console.error("Egg Ownership Check Error:", error);
+      console.error("Kiosk Egg Check Error:", error);
       return JSON.stringify({
         success: false,
         error: error.message,
-        details: error
+        details: error,
       });
     }
-  }
+  },
 };
