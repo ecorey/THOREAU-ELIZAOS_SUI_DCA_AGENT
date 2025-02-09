@@ -4,9 +4,14 @@ import { WalletProvider, walletProvider } from "./providers/wallet.ts";
 
 
 
-// DCA
+// AFTERMATH DCA
 import { dcaProvider } from "./providers/dcaProvider.ts";
 import createDca from "./actions/createDca.ts";
+
+
+// AFTERMATH EGG
+import { eggOwnershipProvider } from "./providers/eggCheckProvider.ts";
+import eggCheck from "./actions/eggCheck.ts";
 
 
 
@@ -32,8 +37,8 @@ export const dcaPlugin: Plugin = {
         bluefinFetchData,
         suiUsdcSwap,
         usdcSuiSwap,
-        // createDca,
-        
+        createDca,
+        eggCheck,   
     ],
     evaluators: [],
     providers: [
@@ -41,7 +46,8 @@ export const dcaPlugin: Plugin = {
         bluefinDataProvider,
         suiUsdcSwapProvider,
         usdcSuiSwapProvider,
-        // dcaProvider,
+        dcaProvider,
+        eggOwnershipProvider,
     ],
 };
 
