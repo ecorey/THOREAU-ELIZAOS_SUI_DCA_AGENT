@@ -12,7 +12,6 @@ interface SwapState extends State {
   slippage?: number;
 }
 
-// Hard-code the default pool ID for USDC→SUI swaps.
 const DEFAULT_POOL_ID_USDC_SUI =
   "0x3b585786b13af1d8ea067ab37101b6513a05d2f90cfe60e8b1d9e1b46a63c4fa";
 
@@ -30,7 +29,6 @@ export const usdcSuiSwapProvider: Provider = {
       }
       const keyPair = Ed25519Keypair.fromSecretKey(new Uint8Array(privateKeyArray));
 
-      // Initialize the on-chain call components.
       const oc = new OnChainCalls(client, mainnet, {
         signer: keyPair,
         isUIWallet: false,
@@ -40,25 +38,20 @@ export const usdcSuiSwapProvider: Provider = {
       });
       const qc = new QueryChain(client);
 
-      // Always use the default pool ID.
       const poolID = state?.poolID || DEFAULT_POOL_ID_USDC_SUI;
       const poolState = await qc.getPool(poolID);
 
-      // For a USDC→SUI swap:
-      // - The input coin is USDC (coinB) and the output coin is SUI (coinA).
-      // - Therefore, use coinB decimals for the input amount.
-      // - Force aToB to false (swap from coinB to coinA) and byAmountIn to true.
+      
       const iSwapParams: ISwapParams = {
         pool: poolState,
         amountIn: toBigNumber(state.amount, poolState.coin_b.decimals),
         amountOut: 0,
-        aToB: false, // false: from coinB (USDC) to coinA (SUI)
+        aToB: false, 
         byAmountIn: true,
         slippage: state.slippage,
         applySlippageToPrice: true,
       };
 
-      // Execute the swap using the SDK with a fixed gas budget.
       const result = await oc.swapAssets(iSwapParams, { gasBudget: 100_000_000 });
       const fullResult = JSON.stringify({ success: true, txHash: result });
       const summary =

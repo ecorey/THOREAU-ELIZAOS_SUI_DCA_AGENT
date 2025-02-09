@@ -8,7 +8,6 @@ import {
 } from "@elizaos/core";
 import { dcaProvider, DCAState } from "../providers/dcaProvider.ts";
 
-// Helper function to parse DCA parameters from the user message
 function parseDCAParams(message: Memory): Record<string, any> {
     const text = message.content.text?.toLowerCase() || '';
     const params: Record<string, any> = {};

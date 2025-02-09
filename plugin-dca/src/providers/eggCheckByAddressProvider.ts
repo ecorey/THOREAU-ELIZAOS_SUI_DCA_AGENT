@@ -2,7 +2,7 @@ import { IAgentRuntime, Memory, Provider, State } from "@elizaos/core";
 import { SuiClient, Ed25519Keypair } from "@firefly-exchange/library-sui";
 
 export interface EggCheckByAddressState extends State {
-  address?: string; // We'll reuse this for kiosk ID
+  address?: string; 
 }
 
 export const checkEggOwnershipByAddressProvider: Provider = {
@@ -27,7 +27,7 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         url: "https://fullnode.mainnet.sui.io:443",
       });
 
-      // 1. Load local keypair from environment
+      // Load local keypair from environment
       const privateKeyArray = process.env.SUI_PRIVATE_KEY_VAR?.split(",").map(Number);
       if (!privateKeyArray) {
         throw new Error("SUI_PRIVATE_KEY_VAR is not set or invalid");
@@ -36,12 +36,12 @@ export const checkEggOwnershipByAddressProvider: Provider = {
       const localWalletAddress = keyPair.toSuiAddress();
       console.log("Local wallet address:", localWalletAddress);
 
-      // 2. Get the kiosk object with its Move fields
+      // Get the kiosk object with its Move fields
       const kioskObjectRes = await client.getObject({
         id: kioskId,
         options: {
-          showOwner: true,   // We want to see if it's Shared or AddressOwner, etc.
-          showContent: true, // So we can read the kiosk's fields
+          showOwner: true,   
+          showContent: true, 
         },
       });
 
@@ -52,15 +52,13 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         });
       }
 
-      // The kiosk might be shared, but let's see if it has an "owner" field in its Move struct
       let kioskOwnerField: string | null = null;
-      const kioskOwnerInfo = kioskObjectRes.data.owner; // e.g. { Shared: { ... } } or { AddressOwner: "0x..." }
+      const kioskOwnerInfo = kioskObjectRes.data.owner; 
 
-      // If it's a move object, we can read its fields
       const content = kioskObjectRes.data.content;
       if (content && content.dataType === "moveObject") {
         const fields = content.fields as { owner?: string };
-        // Adjust the property name ("owner") to match your actual kiosk's Move definition
+        
         if (fields.owner && typeof fields.owner === "string") {
           kioskOwnerField = fields.owner;
         }
@@ -69,12 +67,11 @@ export const checkEggOwnershipByAddressProvider: Provider = {
       console.log("Kiosk Sui owner info:", kioskOwnerInfo);
       console.log("Kiosk 'owner' field in Move struct:", kioskOwnerField);
 
-      // 3. Compare kiosk's Move-level owner address to localWalletAddress
       const isOwner =
         kioskOwnerField &&
         kioskOwnerField.toLowerCase() === localWalletAddress.toLowerCase();
 
-      // 4. Check if the kiosk has an AfEgg
+      // Check if the kiosk has an AfEgg
       const dynamicFieldsRes = await client.getDynamicFields({
         parentId: kioskId,
       });
@@ -93,7 +90,7 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         }
       }
 
-      // 5. Return the final result
+      // Final result
       const result = {
         success: true,
         kioskId,
