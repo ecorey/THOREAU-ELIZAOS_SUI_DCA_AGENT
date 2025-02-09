@@ -9,18 +9,12 @@ import {
 import { dcaProvider } from "../providers/dcaProvider.ts";
 
 export default {
-  name: "AFTERMATH_SETUP",
-  description: "Connect to Aftermath and create user account if not found",
+  name: "CREATE_DCA_ORDER",
+  description: "Create a Dollar-Cost Averaging (DCA) order on Aftermath",
 
-  // Validate based on various trigger phrases
-  validate: async (_runtime: IAgentRuntime, message: Memory) => {
-    const text = message.content.text?.toLowerCase() || "";
-    return (
-      text.includes("aftermath") || 
-      text.includes("af setup") || 
-      text.includes("dca setup") || 
-      text.includes("initialize wallet")
-    );
+  // 1) Force this action to ALWAYS run for every incoming message:
+  validate: async (_runtime: IAgentRuntime, _message: Memory) => {
+    return true; // <---- changed from your old text-check to just `true`
   },
 
   handler: async (
@@ -30,30 +24,39 @@ export default {
     _options: {},
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    elizaLogger.log("Starting AFTERMATH_SETUP handler...");
+    elizaLogger.log("Starting CREATE_DCA_ORDER handler...");
 
     try {
-      const result = await dcaProvider.get(runtime, message, state);
-      
+      // 2) Set up the user’s Aftermath account
+      const setupResult = await dcaProvider.get(runtime, message, state);
+      if (!setupResult.startsWith("SUCCESS")) {
+        throw new Error("Failed to set up Aftermath account");
+      }
+
+      // 3) Actually create the DCA order with your existing parameters
+      const dcaResult = await dcaProvider.createDcaOrder(runtime, message, state);
+
+      // Return text back to user
       if (callback) {
         callback({
-          text: result.startsWith("SUCCESS") 
-            ? `✅ ${result}` 
-            : `❌ Setup Failed: ${result}`,
-          content: { 
-            status: result.startsWith("SUCCESS") ? "ok" : "error" 
+          text: dcaResult.startsWith("SUCCESS")
+            ? `✅ ${dcaResult}`
+            : `❌ DCA Order Creation Failed: ${dcaResult}`,
+          content: {
+            status: dcaResult.startsWith("SUCCESS") ? "ok" : "error"
           },
         });
       }
 
-      return result.startsWith("SUCCESS");
+      // Indicate success/fail
+      return dcaResult.startsWith("SUCCESS");
     } catch (error: any) {
-      console.error("Error during Aftermath setup:", error);
-      
+      console.error("Error during DCA order creation:", error);
+
       if (callback) {
         callback({
-          text: `❌ Aftermath setup failed: ${error.message}`,
-          content: { 
+          text: `❌ DCA order creation failed: ${error.message}`,
+          content: {
             error: error.message,
             details: {
               name: error.name,
@@ -62,35 +65,36 @@ export default {
           },
         });
       }
-      
+
       return false;
     }
   },
 
+  // Original examples are unchanged (you can keep or remove them)
   examples: [
     [
       {
         user: "{{user1}}",
-        content: { text: "Can you set up my Aftermath wallet?" },
+        content: { text: "Create a DCA order to buy USDC" },
       },
       {
         user: "{{user2}}",
-        content: { 
-          text: "✅ Aftermath account setup complete", 
-          action: "AFTERMATH_SETUP" 
+        content: {
+          text: "✅ DCA Order created",
+          action: "CREATE_DCA_ORDER"
         },
       },
     ],
     [
       {
         user: "{{user1}}",
-        content: { text: "Initialize my DCA wallet" },
+        content: { text: "Set up my DCA investment" },
       },
       {
         user: "{{user2}}",
-        content: { 
-          text: "✅ Aftermath account setup complete", 
-          action: "AFTERMATH_SETUP" 
+        content: {
+          text: "✅ DCA Order created",
+          action: "CREATE_DCA_ORDER"
         },
       },
     ],
