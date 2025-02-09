@@ -4,11 +4,6 @@ import { WalletProvider, walletProvider } from "./providers/wallet.ts";
 
 
 
-// DEXSCREENER
-import { dexscreenerProvider } from "./providers/dexscreenerProvider.ts";
-import dexscreenerCall from "./actions/dexscreenerCall.ts";
-
-
 // DCA
 import { dcaProvider } from "./providers/dcaProvider.ts";
 import createDca from "./actions/createDca.ts";
@@ -16,11 +11,14 @@ import createDca from "./actions/createDca.ts";
 
 
 // BLUEFIN PROTOCOL
-import {bluefinDataProvider} from "./providers/bluefinDataProvider.ts";
-import { bluefinSwapProvider } from "./providers/bluefinSwapProvider.ts";
+import { bluefinDataProvider } from "./providers/bluefinDataProvider.ts";
+import { suiUsdcSwapProvider } from "./providers/suiUsdcSwapProvider.ts";
+import { usdcSuiSwapProvider } from "./providers/usdcSuiSwapProvider.ts";
+
 
 import bluefinFetchData from "./actions/bluefinFetchData.ts";
-import bluefinSwap from "./actions/bluefinSwap.ts";
+import suiUsdcSwap from "./actions/suiUsdcSwap.ts";
+import usdcSuiSwap from "./actions/usdcSuiSwap.ts";
 
 
 
@@ -32,20 +30,18 @@ export const dcaPlugin: Plugin = {
     actions: [
         transferToken,
         bluefinFetchData,
-        bluefinSwap,
-        // dexscreenerCall,
-        createDca,
-        // createDcaAction,
+        suiUsdcSwap,
+        usdcSuiSwap,
+        // createDca,
         
     ],
     evaluators: [],
     providers: [
         walletProvider,
         bluefinDataProvider,
-        bluefinSwapProvider,
-        // dexscreenerProvider,
-        dcaProvider,
-        // createDcaProvider, 
+        suiUsdcSwapProvider,
+        usdcSuiSwapProvider,
+        // dcaProvider,
     ],
 };
 
