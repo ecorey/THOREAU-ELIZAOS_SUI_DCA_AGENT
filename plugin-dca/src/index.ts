@@ -10,11 +10,9 @@ import createDca from "./actions/createDca.ts";
 
 
 // AFTERMATH EGG
-import { eggOwnershipProvider } from "./providers/eggCheckProvider.ts";
-import eggCheck from "./actions/eggCheck.ts";
-
 import { checkEggOwnershipByAddressProvider } from "./providers/eggCheckByAddressProvider.ts";
 import eggCheckByAddress from "./actions/eggCheckByAddress.ts";
+
 
 
 // BLUEFIN PROTOCOL
@@ -40,7 +38,6 @@ export const dcaPlugin: Plugin = {
         // suiUsdcSwap,
         // usdcSuiSwap,
         // createDca,
-        eggCheck,
         eggCheckByAddress,   
     ],
     evaluators: [],
@@ -50,7 +47,6 @@ export const dcaPlugin: Plugin = {
         // suiUsdcSwapProvider,
         // usdcSuiSwapProvider,
         // dcaProvider,
-        eggOwnershipProvider,
         checkEggOwnershipByAddressProvider,
     ],
 };

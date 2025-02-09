@@ -1,17 +1,16 @@
 import { IAgentRuntime, Memory, Action, HandlerCallback } from "@elizaos/core";
 import {
   EggCheckByAddressState,
-  checkEggOwnershipByAddressProvider,
+  checkEggOwnershipByAddressProvider
 } from "../providers/eggCheckByAddressProvider.ts";
 
 export default {
   name: "CHECK_ADDRESS_EGG_OWNERSHIP",
   similes: ["CHECK_ADDRESS_AF_EGG", "VERIFY_ADDRESS_EGG", "CHECK_WALLET_EGG"],
-  description: "Check if the kiosk (passed in) has an AF egg, return kiosk's 'owner' field.",
+  description: "Check if a kiosk has an AF egg and if the local wallet is the kiosk owner",
 
-  validate: async (runtime: IAgentRuntime, message: Memory) => {
+  validate: async (_runtime: IAgentRuntime, message: Memory) => {
     const text = message.content.text?.toLowerCase() || "";
-    // Very simple: Must have a 0x... ID and the phrase "egg" or "af"
     return (
       /0x[a-fA-F0-9]{64}/.test(text) &&
       (text.includes("egg") || text.includes("af"))
@@ -27,40 +26,40 @@ export default {
   ): Promise<boolean> => {
     try {
       const text = message.content.text || "";
-      console.log("Processing kiosk egg check text:", text);
-
-      // Extract kiosk ID
       const kioskMatch = text.match(/0x[a-fA-F0-9]{64}/);
       if (!kioskMatch) {
         if (callback) {
           callback({
             text: "Please provide a valid kiosk ID (0x...)",
-            content: { status: "missing_kiosk_id" },
+            content: { status: "missing_kiosk_id" }
           });
         }
         return false;
       }
 
-      // We'll store kiosk ID in 'address'
-      state.address = kioskMatch[0];
+      state.address = kioskMatch[0]; // kioskId
+      console.log("Checking kiosk ID:", state.address);
 
-      // Call the provider
-      const resultStr = await checkEggOwnershipByAddressProvider.get(
-        runtime,
-        message,
-        state
-      );
+      // Call your existing provider
+      const resultStr = await checkEggOwnershipByAddressProvider.get(runtime, message, state);
       const parsed = JSON.parse(resultStr);
 
       let responseText: string;
       if (!parsed.success) {
         responseText = `Error checking kiosk: ${parsed.error}`;
       } else {
-        // Summarize
-        if (parsed.hasEgg) {
-          responseText = `Kiosk ${parsed.kioskId} **DOES** contain an AfEgg.\nMove-struct owner field: ${parsed.kioskOwnerField}\nSui owner: ${JSON.stringify(parsed.kioskSuiOwner)}`;
+        // Minimal response logic
+        const hasEgg = parsed.hasEgg;
+        const isOwner = parsed.isOwner;
+        if (hasEgg) {
+          responseText = "Yes, the kiosk has an egg!\n";
         } else {
-          responseText = `Kiosk ${parsed.kioskId} does NOT contain an AfEgg.\nMove-struct owner field: ${parsed.kioskOwnerField}\nSui owner: ${JSON.stringify(parsed.kioskSuiOwner)}`;
+          responseText = "No egg in the kiosk.\n";
+        }
+        if (isOwner) {
+          responseText += "You ARE the owner! Congratulations!!!";
+        } else {
+          responseText += "You are NOT the owner. Sorry!";
         }
       }
 
@@ -69,8 +68,8 @@ export default {
           text: responseText,
           content: {
             status: parsed.success ? "success" : "error",
-            result: parsed,
-          },
+            result: parsed
+          }
         });
       }
       return true;
@@ -80,7 +79,7 @@ export default {
       if (callback) {
         callback({
           text: `Error checking kiosk: ${error.message || "Unknown error"}`,
-          content: { error: error.message },
+          content: { error: error.message }
         });
       }
       return false;
@@ -92,16 +91,16 @@ export default {
       {
         user: "{{user1}}",
         content: {
-          text: "Check if 0x372247ec1305bf1ade33fb4aca2a9de489ec0f44a9b8a65f4c79c90cec2f5772 has an AF egg",
-        },
+          text: "Check if 0x372247ec1305bf1ade33fb4aca2a9de489ec0f44a9b8a65f4c79c90cec2f5772 owns an AF egg"
+        }
       },
       {
         user: "{{user2}}",
         content: {
-          text: "Kiosk 0x3722... does contain an AfEgg. Owner: 0xbadd6ced76a9...",
-          action: "CHECK_ADDRESS_EGG_OWNERSHIP",
-        },
-      },
-    ],
-  ],
+          text: "Yes, the kiosk has an egg!\nYou are NOT the owner. Sorry!",
+          action: "CHECK_ADDRESS_EGG_OWNERSHIP"
+        }
+      }
+    ]
+  ]
 } as Action;
