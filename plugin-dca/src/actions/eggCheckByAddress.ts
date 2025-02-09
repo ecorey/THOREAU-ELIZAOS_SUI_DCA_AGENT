@@ -37,10 +37,9 @@ export default {
         return false;
       }
 
-      state.address = kioskMatch[0]; // kioskId
+      state.address = kioskMatch[0]; 
       console.log("Checking kiosk ID:", state.address);
 
-      // Call your existing provider
       const resultStr = await checkEggOwnershipByAddressProvider.get(runtime, message, state);
       const parsed = JSON.parse(resultStr);
 
@@ -48,7 +47,6 @@ export default {
       if (!parsed.success) {
         responseText = `Error checking kiosk: ${parsed.error}`;
       } else {
-        // Minimal response logic
         const hasEgg = parsed.hasEgg;
         const isOwner = parsed.isOwner;
         if (hasEgg) {

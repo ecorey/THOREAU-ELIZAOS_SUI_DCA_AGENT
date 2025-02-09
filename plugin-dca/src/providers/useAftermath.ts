@@ -1,7 +1,7 @@
 import { Aftermath } from "aftermath-ts-sdk";
 import type { SuiClient } from "@mysten/sui.js/client";
 
-let instance: Aftermath | null = null; // Ensure Singleton SDK
+let instance: Aftermath | null = null; 
 
 const useAftermath = async (
   client: SuiClient,
@@ -16,7 +16,6 @@ const useAftermath = async (
 
   const dca = instance.Dca();
 
-  // Check if user has a public key
   console.log("🔍 Checking for existing public key...");
   const userPublicKey = await dca.getUserPublicKey({ walletAddress });
 
@@ -33,14 +32,12 @@ const useAftermath = async (
         throw new Error("Generated signature is empty! Possible signing issue.");
       }
 
-      // Encode signature for Aftermath API
       const encodedSignature = Buffer.from(signature, "hex").toString("base64");
       const encodedMessage = Buffer.from(messageBytes).toString("base64");
 
       console.log("🔹 Signed message:", encodedMessage);
       console.log("🔹 Encoded signature:", encodedSignature);
 
-      // Send to Aftermath API
       const success = await dca.createUserPublicKey({
         walletAddress,
         bytes: encodedMessage,

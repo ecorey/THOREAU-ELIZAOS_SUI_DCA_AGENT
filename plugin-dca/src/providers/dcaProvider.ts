@@ -13,10 +13,8 @@ export const dcaProvider: Provider = {
     console.log("\n[START] Connecting to Aftermath SDK");
 
     try {
-      // --- 1: Initialize Sui Client ---
       const client = new SuiClient({ url: "https://fullnode.mainnet.sui.io:443" });
 
-      // --- 2: Load Private Key ---
       console.log("\n[1] Loading wallet from SUI_PRIVATE_KEY_VAR");
       const privateKeyVar = process.env.SUI_PRIVATE_KEY_VAR;
 
@@ -36,7 +34,6 @@ export const dcaProvider: Provider = {
 
       console.log("✓ Wallet address:", walletAddress);
 
-      // --- 3: Ensure Enough SUI for Gas ---
       console.log("\n[3] Checking SUI balance for gas fees...");
 
       const balance = await client.getBalance({ owner: walletAddress, coinType: "0x2::sui::SUI" });
@@ -49,7 +46,6 @@ export const dcaProvider: Provider = {
       console.log(`✅ SUI balance is sufficient: ${balance.totalBalance} SUI`);
 
 
-      // --- 4: Initialize Aftermath SDK ---
       console.log("\n[2] Connecting to Aftermath SDK");
       const aftermath = await useAftermath(client, walletAddress, async ({ message }) => {
         return keypair.signPersonalMessage(message);

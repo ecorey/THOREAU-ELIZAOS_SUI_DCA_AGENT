@@ -3,7 +3,6 @@ import { IAgentRuntime, Memory, Provider, State } from "@elizaos/core";
 import { SuiClient } from "@firefly-exchange/library-sui";
 import { QueryChain } from "@firefly-exchange/library-sui/dist/src/spot/query-chain.js";
 
-// Define the PoolInfo interface
 interface PoolInfo {
     id: string;
     name: string;
@@ -24,7 +23,6 @@ interface PoolInfo {
     is_paused: boolean;
 }
 
-// Initialize client without the timeout option
 let client: SuiClient;
 try {
     client = new SuiClient({
