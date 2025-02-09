@@ -1,5 +1,5 @@
 import { IAgentRuntime, Memory, Provider, State } from "@elizaos/core";
-import { SuiClient } from "@firefly-exchange/library-sui";
+import { SuiClient, Ed25519Keypair } from "@firefly-exchange/library-sui";
 
 export interface EggCheckByAddressState extends State {
   address?: string; // We'll reuse this for kiosk ID
@@ -27,12 +27,21 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         url: "https://fullnode.mainnet.sui.io:443",
       });
 
-      // 1. Get the kiosk object with its Move fields
+      // 1. Load local keypair from environment
+      const privateKeyArray = process.env.SUI_PRIVATE_KEY_VAR?.split(",").map(Number);
+      if (!privateKeyArray) {
+        throw new Error("SUI_PRIVATE_KEY_VAR is not set or invalid");
+      }
+      const keyPair = Ed25519Keypair.fromSecretKey(new Uint8Array(privateKeyArray));
+      const localWalletAddress = keyPair.toSuiAddress();
+      console.log("Local wallet address:", localWalletAddress);
+
+      // 2. Get the kiosk object with its Move fields
       const kioskObjectRes = await client.getObject({
         id: kioskId,
         options: {
-          showOwner: true,    // We want to see if it's Shared or AddressOwner, etc.
-          showContent: true,  // So we can read the kiosk's fields
+          showOwner: true,   // We want to see if it's Shared or AddressOwner, etc.
+          showContent: true, // So we can read the kiosk's fields
         },
       });
 
@@ -60,7 +69,12 @@ export const checkEggOwnershipByAddressProvider: Provider = {
       console.log("Kiosk Sui owner info:", kioskOwnerInfo);
       console.log("Kiosk 'owner' field in Move struct:", kioskOwnerField);
 
-      // 2. Check if the kiosk has an AfEgg
+      // 3. Compare kiosk's Move-level owner address to localWalletAddress
+      const isOwner =
+        kioskOwnerField &&
+        kioskOwnerField.toLowerCase() === localWalletAddress.toLowerCase();
+
+      // 4. Check if the kiosk has an AfEgg
       const dynamicFieldsRes = await client.getDynamicFields({
         parentId: kioskId,
       });
@@ -79,13 +93,14 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         }
       }
 
+      // 5. Return the final result
       const result = {
         success: true,
         kioskId,
-        // Kiosk Sui-level owner (could be "Shared", "Immutable", or "AddressOwner")
         kioskSuiOwner: kioskOwnerInfo,
-        // Kiosk's Move-level "owner" field (often the actual user address)
         kioskOwnerField,
+        localWalletAddress,
+        isOwner,
         hasEgg,
       };
 
