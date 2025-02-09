@@ -18,10 +18,8 @@ export const dcaProvider: Provider = {
     console.log("\n[START] Connecting to Aftermath SDK (Account Setup)");
 
     try {
-      // 1) Create SuiClient
       const client = new SuiClient({ url: getFullnodeUrl("mainnet") });
 
-      // 2) Load Private Key
       console.log("\n[1] Loading wallet from SUI_PRIVATE_KEY_VAR");
       const privateKeyVar = process.env.SUI_PRIVATE_KEY_VAR;
       
@@ -29,20 +27,16 @@ export const dcaProvider: Provider = {
         throw new Error("SUI_PRIVATE_KEY_VAR environment variable is missing");
       }
 
-      // 3) Parse Private Key 
       let privateKeyBytes: Uint8Array;
       try {
-        // Try comma-separated numbers
         if (privateKeyVar.includes(',')) {
           privateKeyBytes = new Uint8Array(
             privateKeyVar.split(',').map((num) => parseInt(num.trim(), 10))
           );
         } 
-        // Try hex format
         else if (privateKeyVar.startsWith('0x')) {
           privateKeyBytes = Buffer.from(privateKeyVar.slice(2), 'hex');
         } 
-        // Try base64
         else {
           privateKeyBytes = Buffer.from(privateKeyVar, 'base64');
         }
@@ -52,21 +46,17 @@ export const dcaProvider: Provider = {
         );
       }
 
-      console.log("🔹 Parsed Private Key (first 5 bytes):", privateKeyBytes.slice(0, 5));
-
-      // 4) Create keypair & get wallet address
       const keypair = Ed25519Keypair.fromSecretKey(privateKeyBytes);
       const walletAddress = keypair.toSuiAddress();
       console.log("✓ Wallet address:", walletAddress);
 
-      // 5) Check SUI balance for gas
       console.log("\n[3] Checking SUI balance for gas fees...");
       const balance = await client.getBalance({
         owner: walletAddress,
         coinType: "0x2::sui::SUI"
       });
 
-      const minRequiredSui = BigInt(100_000_000); // 0.1 SUI example
+      const minRequiredSui = BigInt(100_000_000); 
       if (BigInt(balance.totalBalance) < minRequiredSui) {
         throw new Error(
           `❌ Insufficient SUI for gas. Need at least ${
@@ -76,7 +66,6 @@ export const dcaProvider: Provider = {
       }
       console.log(`✅ SUI balance is sufficient: ${balance.totalBalance} SUI`);
 
-      // 6) Connect to Aftermath (sets up user's public key if needed)
       console.log("\n[2] Connecting to Aftermath SDK for user account setup...");
       const { dca, instance } = await useAftermath(client, walletAddress, async ({ message }) => {
         const signResult = await keypair.signPersonalMessage(message);
@@ -88,7 +77,6 @@ export const dcaProvider: Provider = {
         } as { signature: string; bytes: Uint8Array };
       });
 
-      // Optional: Store aftermath in state
       if (state) {
         (state as DCAState).aftermathInstance = instance;
         (state as DCAState).walletAddress = walletAddress;

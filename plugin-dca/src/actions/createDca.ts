@@ -33,10 +33,8 @@ export default {
     elizaLogger.log("Starting AFTERMATH_SETUP handler...");
 
     try {
-      // Call the provider to set up the account
       const result = await dcaProvider.get(runtime, message, state);
       
-      // Prepare callback response
       if (callback) {
         callback({
           text: result.startsWith("SUCCESS") 
@@ -48,7 +46,6 @@ export default {
         });
       }
 
-      // Return true if successful, false otherwise
       return result.startsWith("SUCCESS");
     } catch (error: any) {
       console.error("Error during Aftermath setup:", error);
@@ -70,7 +67,6 @@ export default {
     }
   },
 
-  // Example interactions to demonstrate usage
   examples: [
     [
       {
