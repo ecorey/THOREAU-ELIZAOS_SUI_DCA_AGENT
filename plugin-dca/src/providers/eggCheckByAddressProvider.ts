@@ -19,7 +19,6 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         });
       }
 
-      // Interpret 'address' as kioskId
       const kioskId = state.address;
       console.log("Checking kiosk:", kioskId);
 
@@ -27,7 +26,6 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         url: "https://fullnode.mainnet.sui.io:443",
       });
 
-      // Load local keypair from environment
       const privateKeyArray = process.env.SUI_PRIVATE_KEY_VAR?.split(",").map(Number);
       if (!privateKeyArray) {
         throw new Error("SUI_PRIVATE_KEY_VAR is not set or invalid");
@@ -36,7 +34,6 @@ export const checkEggOwnershipByAddressProvider: Provider = {
       const localWalletAddress = keyPair.toSuiAddress();
       console.log("Local wallet address:", localWalletAddress);
 
-      // Get the kiosk object with its Move fields
       const kioskObjectRes = await client.getObject({
         id: kioskId,
         options: {
@@ -71,7 +68,6 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         kioskOwnerField &&
         kioskOwnerField.toLowerCase() === localWalletAddress.toLowerCase();
 
-      // Check if the kiosk has an AfEgg
       const dynamicFieldsRes = await client.getDynamicFields({
         parentId: kioskId,
       });
@@ -90,7 +86,6 @@ export const checkEggOwnershipByAddressProvider: Provider = {
         }
       }
 
-      // Final result
       const result = {
         success: true,
         kioskId,
