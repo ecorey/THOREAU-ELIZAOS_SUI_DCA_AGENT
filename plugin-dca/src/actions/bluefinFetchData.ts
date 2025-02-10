@@ -53,7 +53,6 @@ export default {
             const result = await bluefinDataProvider.get(runtime, message, state);
             console.log("Provider result:", result);
 
-            // creates memory for the result
             const newMemoryResultData: Memory = {
                 userId: message.userId,
                 agentId: message.agentId,
