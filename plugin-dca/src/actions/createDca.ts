@@ -54,8 +54,8 @@ export default {
         const tradesMatch = text.match(/(\d+)\s*trades/i);
         const trades = tradesMatch ? parseInt(tradesMatch[1], 10) : 2;
 
-        const minPriceMatch = text.match(/min price\s*\$(\d+(\.\d+)?)/i);
-        const maxPriceMatch = text.match(/max price\s*\$(\d+(\.\d+)?)/i);
+        const minPriceMatch = text.match(/min price(?: of)?\s*\$(\d+(\.\d+)?)/i);
+        const maxPriceMatch = text.match(/max price(?: of)?\s*\$(\d+(\.\d+)?)/i);
         const minPrice = minPriceMatch
           ? BigInt(Math.round(parseFloat(minPriceMatch[1]) * 1_000_000_000))
           : BigInt(10);
