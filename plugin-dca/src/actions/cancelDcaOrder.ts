@@ -29,6 +29,22 @@ export default {
 
     const result = await dcaCancelProvider.cancelDcaOrder(runtime, message, state);
 
+    // creates memory for the result
+    const newMemoryCancelData: Memory = {
+      userId: message.userId,
+      agentId: message.agentId,
+      roomId: message.roomId,
+      content: {
+          text: result,
+          action: "CANCEL_DCA_ORDER",
+          source: message.content?.source,
+      },
+    };
+
+    callback(newMemoryCancelData.content);
+
+
+
     if (callback) {
       if (result.startsWith("ERROR")) {
         callback({
