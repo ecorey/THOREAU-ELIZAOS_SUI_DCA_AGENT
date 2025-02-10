@@ -45,7 +45,6 @@ const useAftermath = async (
     console.log("Encoded Message:", encodedMessage);
     console.log("Signature:", signature);
 
-    // Create public key
     const success = await dca.createUserPublicKey({
       walletAddress,
       bytes: encodedMessage,

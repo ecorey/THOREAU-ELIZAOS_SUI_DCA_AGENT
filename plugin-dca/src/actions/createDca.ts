@@ -90,7 +90,6 @@ export default {
 
       const dcaResult = await dcaProvider.createDcaOrder(runtime, message, state);
 
-      // creates memory for the result
       const newMemoryDcaData: Memory = {
         userId: message.userId,
         agentId: message.agentId,

@@ -38,7 +38,6 @@ import {
         state
       );
 
-      // creates memory for the result
       const newMemoryActiveData: Memory = {
         userId: message.userId,
         agentId: message.agentId,
