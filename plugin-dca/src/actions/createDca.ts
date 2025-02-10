@@ -90,6 +90,21 @@ export default {
 
       const dcaResult = await dcaProvider.createDcaOrder(runtime, message, state);
 
+      // creates memory for the result
+      const newMemoryDcaData: Memory = {
+        userId: message.userId,
+        agentId: message.agentId,
+        roomId: message.roomId,
+        content: {
+            text: dcaResult,
+            action: "CREATE_DCA_ORDER",
+            source: message.content?.source,
+        },
+      };
+
+      callback(newMemoryDcaData.content);
+
+
       if (callback) {
         if (dcaResult.startsWith("SUCCESS")) {
           callback({

@@ -13,9 +13,7 @@ import {
     name: "GET_ACTIVE_DCA_ORDERS",
     description: "Fetch the user's ACTIVE DCA orders only",
   
-    /**
-     * We'll trigger if user says e.g. "show active orders" or "check active dca"
-     */
+    
     validate: async (_runtime: IAgentRuntime, message: Memory) => {
       const text = (message.content.text || "").toLowerCase();
       return (
@@ -34,14 +32,27 @@ import {
     ): Promise<boolean> => {
       elizaLogger.log("[GET_ACTIVE_DCA_ORDERS] Handler triggered...");
   
-      // 1) Call the new provider's method
       const result = await dcaActiveOrdersProvider.getActiveOrders(
         runtime,
         message,
         state
       );
+
+      // creates memory for the result
+      const newMemoryActiveData: Memory = {
+        userId: message.userId,
+        agentId: message.agentId,
+        roomId: message.roomId,
+        content: {
+            text: result,
+            action: "GET_ACTIVE_DCA_ORDERS",
+            source: message.content?.source,
+        },
+      };
+
+      callback(newMemoryActiveData.content);
+
   
-      // 2) Provide output
       if (callback) {
         if (result.startsWith("ERROR")) {
           callback({
